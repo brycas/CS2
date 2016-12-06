@@ -88,8 +88,21 @@ update msg model =
             TimePassed n ->
                 -- This needs the real units time!!!
                 { model | time = model.time + 1 }
-            MouseClicked n
-                { if n }
+            MouseClicked n ->
+                { case model.mode of
+                    Ready ->
+                        if clickedButton then
+                            { model | model.mode = Playing }
+                        else
+                            model
+                    Playing ->
+                        model
+                    Done ->
+                        if clickedButton then
+                            { model | model.mode = Ready, model.time = 0.0, model.score = 0}
+                        else
+                            model
+            MouseMoved
 
 main =
     APCS.intermediateProgram
