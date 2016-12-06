@@ -72,23 +72,22 @@ view model =
 update : Msg -> Model -> Model
 update msg model =
     let
-        buttonPressed = (buttonXmin < (model.mousePosition).first < buttonXmax) and (buttonYmin < (model.mousePosition).second < buttonYmax)
+        s = 0
     in
         case msg of
             KeyPressed wasPressed Space ->
-                { if (model.mode == Ready) (||) (model.mode = Done) then
+                if (model.mode == Ready) (||) (model.mode == Done) then
                     model
                 else
                     if toFloat(round model.time) == model.time then
                         { model | score = model.score + 1 }
                     else
                         { model | mode = Done }
-                }
             TimePassed n ->
                 -- This needs the real units time!!!
                 { model | time = model.time + (inMilliseconds n) }
             ButtonClicked a ->
-                { case a of
+                case a of
                     Ready ->
                         if buttonPressed then
                             { model | model.mode = Playing }
