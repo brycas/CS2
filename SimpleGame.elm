@@ -22,7 +22,6 @@ import Mouse exposing (Position)
 type alias Model =
     { time : Float
     , mode : ModeTypes
-    , mousePosition : Float
     , score : Int
     }
 
@@ -36,8 +35,7 @@ type ModeTypes
 type Msg
     = KeyPressed Bool Key
     | TimePassed Float
-    | MouseClicked
-    | MouseMoved
+    | ButtonClicked ModeTypes
 
 
 view : Model -> Html Msg
@@ -58,7 +56,7 @@ view model =
             Ready ->
                 div []
                     [ Element.toHtml (collage 1200 800 formsReady)
-                    , button [] [ text "Start" ]
+                    , button [onClick (ButtonClicked Playing)] [ text "Start" ]
                     ]
 
             Playing ->
@@ -68,12 +66,13 @@ view model =
             Done ->
                 div []
                     [ Element.toHtml (collage 1200 800 formsDone)
-                    , button [] [ Html.text "Play again" ]
+                    , button [onCllick (ButtonClicked Ready)] [ Html.text "Play again" ]
                     ]
 
 update : Msg -> Model -> Model
 update msg model =
     let
+        buttonPressed = (buttonXmin < (model.mousePosition).first < buttonXmax) and (buttonYmin < (model.mousePosition).second < buttonYmax)
     in
         case msg of
             KeyPressed wasPressed Space ->
@@ -87,27 +86,33 @@ update msg model =
                 }
             TimePassed n ->
                 -- This needs the real units time!!!
-                { model | time = model.time + 1 }
-            MouseClicked n ->
-                { case model.mode of
+                { model | time = model.time + (inMilliseconds n) }
+            ButtonClicked a ->
+                { case a of
                     Ready ->
-                        if clickedButton then
+                        if buttonPressed then
                             { model | model.mode = Playing }
                         else
                             model
                     Playing ->
                         model
                     Done ->
-                        if clickedButton then
+                        if buttonPressed then
                             { model | model.mode = Ready, model.time = 0.0, model.score = 0}
                         else
                             model
-            MouseMoved
+
+model : Model
+model = 
+    { mode : Ready
+    , time = 0.0
+    , score = 0
+    }
 
 main =
     APCS.intermediateProgram
         { model = model
         , view = view
         , update = update
-        , subscriptions = Sub.batch [ APCS.keyDowns (KeyPressed True), APCS.keyUps (KeyPressed False), APCS.frames TimePassed, APCS.mouseClicks (MouseClicked), APCS.mouseMoves (MouseMoved ) ]
+        , subscriptions = Sub.batch [ APCS.keyDowns (KeyPressed True), APCS.keyUps (KeyPressed False), APCS.frames TimePassed ]
         }
